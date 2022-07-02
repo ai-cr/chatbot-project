@@ -1,0 +1,128 @@
+<html>
+
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <link href=".\css\sheet.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" type="text/css"
+        rel="stylesheet">
+    <script src=".\js\jquery.js"></script>
+
+</head>
+
+<body class="bg-funky">
+
+    <div class="container">
+        <h3 class="heading text-center">Hotel Reservierungs-Chat</h3>
+        <div class="messaging">
+            <div class="inbox_msg">
+
+                <div class="mesgs">
+                    <div class="msg_history" id="msgs">
+
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+
+        <div>
+            <input name="send" id="sendText">
+            <button id="weg">Sende</button>
+        </div>
+
+        <script>
+
+            const usernames = []
+            var socket = new WebSocket('ws://20.50.139.104:8181/', 'chat');
+            var name = 'u1'
+            socket.onopen = function () {
+
+                name = "name" + Math.floor(Math.random() * Math.floor(700));
+
+                socket.send('{"type": "join", "name":" ' + name + '"}');
+
+                usernames.push(name)
+
+
+            }
+
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+            const messages = document.getElementById("msgs");
+
+            shouldScroll = messages.scrollTop + messages.clientHeight === messages.scrollHeight;
+
+            function scrollToBottom() {
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            Date.prototype.today = function () {
+                return ((this.getDate() < 10) ? "0" : "") + this.getDate() + "/" + (((this.getMonth() + 1) < 10) ? "0" : "") + (this.getMonth() + 1) + "/" + this.getFullYear();
+            }
+
+            Date.prototype.timeNow = function () {
+                return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds();
+            }
+
+            var datetime = new Date().timeNow() + " | " + new Date().today();
+
+            $('#weg').on('click', function (e) {
+                e.preventDefault();
+                var text = $("#sendText").val();
+
+                socket.send('{"type": "msg", "msg": "' + text + '"}');
+
+                var msg = $('<div class="incoming_msg"><div class="incoming_msg_img"> <img src="https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png" alt="sunil"> </div><div class="received_msg"><div class="received_withd_msg"><p>' + $("#sendText").val() + '</p><span class="time_date">' + datetime + '</span></div></div></div></div>');
+                $('#msgs').append(msg);
+
+                if (!shouldScroll) {
+                    scrollToBottom();
+                }
+
+                $('#sendText').val("");
+
+            });
+
+            scrollToBottom();
+
+
+
+            socket.onmessage = async function (msg) {
+                var data = JSON.parse(msg.data);
+
+                switch (data.type) {
+                    case 'msg':
+
+                        if (!usernames.includes(data.name.trim())) {
+                            var msg = $('<div class="sent_msg"> <p>' + data.name + ': ' + data.msg + '</p> <span class="time_date">' + datetime + '</span> </div></div>');
+
+                            await sleep(1500);
+
+                            $('#msgs').append(msg);
+                        }
+                        break;
+                    case 'join':
+                        $('#users').empty();
+                        for (var i = 0; i < data.names.length; i++) {
+                            var user = $('<div>' + data.names[i] + '</div>');
+                            $('#users').append(user);
+                        }
+                        break;
+                }
+                scrollToBottom();
+            };
+
+        </script>
+
+</body>
+
+</html>
