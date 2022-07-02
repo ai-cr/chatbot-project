@@ -1,0 +1,22 @@
+{
+  "name": "hotelbot",
+  "version": "1.0.0",
+  "description": "Chatbot projekt",
+  "main": "staticExpress.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "standard": "^14.3.1",
+    "websocket": "^1.0.30"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node staticExpress.js"
+  },
+  "keywords": [
+    "Backend",
+    "Chatbot"
+  ],
+  "author": "Christian Rink",
+  "license": "ISC"
+}
